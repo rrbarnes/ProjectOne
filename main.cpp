@@ -18,7 +18,8 @@ using namespace std;
  *  Class Product contains 3 members containing the id, category, and
  *  condition of the product
  */
-class Product{
+class Product
+{
 protected:
     // Data members
     string id;
@@ -39,7 +40,8 @@ public:
 };
 
 // Default constructor method
-Product::Product(){
+Product::Product()
+{
     // Initialize fields as empty strings
     id = "";
     category = "";
@@ -47,7 +49,8 @@ Product::Product(){
 }
 
 // Constructor method passed 3 strings
-Product::Product(string i, string cat, string cond){
+Product::Product(string i, string cat, string cond)
+{
     // Set fields based on passed parameters
     id = i;
     category = cat;
@@ -58,25 +61,20 @@ Product::Product(string i, string cat, string cond){
 Product::~Product(){ }
 
 // Return the id of the Product
-Product::getId(){
-    return id;
-}
+string Product::getId(){return id;}
 
 // Return the category of the product
-Product::getCategory(){
-    return category;
-}
+string Product::getCategory(){return category;}
 
 // Return the condition of the product
-Product::getCondition(){
-    return condition;
-}
+string Product::getCondition(){return condition;}
 
 /*
  * Display information about this product, with each field 
  * displayed on a new line.
 */
-Product::display(){
+Product::display()
+{
     cout << "Product id: " << id << "\n" <<
             "Product category: " << category << "\n" <<
             "Product condition: " << condition << "\n" << endl;
@@ -86,7 +84,8 @@ Product::display(){
  *  Class Item is a subclass of Product. It contains 4 members the title, price,
  *  availability, and color of the object.
 */
-class Item : public Product{
+class Item : public Product
+{
 protected:
     // Data members
     string title;
@@ -109,7 +108,8 @@ public:
 };
 
 // Default constructor method
-Item::Item(){
+Item::Item()
+{
     // Initialize fields as empty strings
     title = "";
     avail = "";
@@ -118,7 +118,8 @@ Item::Item(){
 }
 
 // Constructor method passed 4 strings
-Item::Item(string t, string ava, string col, string pri){
+Item::Item(string t, string ava, string col, string pri)
+{
     // Set fields based on passed parameters
     title = t;
     avail = ava;
@@ -130,30 +131,23 @@ Item::Item(string t, string ava, string col, string pri){
 Item::~Item(){ }
 
 // Return the title of the Item
-Item::getTitle(){
-    return title;
-}
+string Item::getTitle(){return title;}
 
 // Return the availability of the Item
-Item::getAvail(){
-    return avail;
-}
+string Item::getAvail(){return avail;}
 
 // Return the color of the Item
-Item::getColor(){
-    return color;
-}
+string Item::getColor(){return color;}
 
 // Return the price of the Item
-Item::getPrice(){
-    return price;
-}
+string Item::getPrice(){return price;}
 
 /*
  * Overridden method from Public class displays all fields
  * of the Item class on a separate line. 
  */
-Item::display(){
+Item::display()
+{
     cout << "Item title: " << title << "\n" <<
             "Item availability: " << avail << "\n" <<
             "Item color: " << color << "\n" <<
@@ -170,25 +164,37 @@ class FileNotFoundException : public Exception{ };
  */
 
 /*
- * Function to open and read input file. If the file
- * does not exist, return false to the caller. Otherwise,
- * return true
+ * Function to open and read passed input file. If the file
+ * does not exist, throw FileNotFoundException. Read each line
+ * into a string array and return.
  */
-bool readFile(char fileName){
-    string line; // string to hold one line of the file
-    ifstream myFile ( fileName ); // open the file
+string readFile(const char* fileName)
+{
+    // Constant used to define array to hold lines of file
+    const int MAX_ITEMS = 1000;
     
-    // 
-    if ( !myFile.is_open() )
-    cout<<"Could not open file\n";
-    else {
-   while ( getline (myFile,line) )
-   {
-   cout << line << '\n';
-   }
-myFile.close();
-}
- }
+    string line; // string to hold one line of the file
+    string items[MAX_ITEMS]; // array to hold up to 1000 items
+    ifstream inputFile ( fileName ); // open the file
+    
+    // Ensure the file was opened. If not, throw exception. 
+    if ( !inputFile.is_open() )
+    {
+        cout << "Could not open file. Ensure your path is correct." << endl;
+        throw FileNotFoundException();
+    }
+    // Otherwise, read the file line by line.
+    else
+    {
+        while (getline (inputFile, line)) // Loop through each line.
+        {
+            if (line != "**") // Fill the items array until you find **
+            {
+                cout << line << '\n';
+            }
+        }
+        inputFile.close(); // Close the input file
+    }
 }
 
 int main(int argc, char** argv) {
