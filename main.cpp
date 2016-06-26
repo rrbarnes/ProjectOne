@@ -11,7 +11,7 @@
 #include <vector>
 #include <fstream>
 #include <string>
-#include "Exception.h"
+//#include "Exception.h"
 using namespace std;
 
 /*
@@ -29,14 +29,17 @@ protected:
 public:
     // Constructors
     Product();
-    Product(string i, string cat, string cond);
+    //Product(string i, string cat, string cond);
     virtual ~Product();
 
-    // Methods
+    // Get and set methods for a Product
     int display();
     string getId();
+    void   setId(string i);
     string getCategory();
+    void   setCategory(string c);
     string getCondition();
+    void   setCondition(string c);
 };
 
 // Default constructor method
@@ -49,25 +52,24 @@ Product::Product()
 }
 
 // Constructor method passed 3 strings
-Product::Product(string i, string cat, string cond)
-{
-    // Set fields based on passed parameters
-    id = i;
-    category = cat;
-    condition = cond;
-}
+//Product::Product(string i, string cat, string cond)
+//{
+//    // Set fields based on passed parameters
+//    id = i;
+//    category = cat;
+//    condition = cond;
+//}
 
 // Destructor for default constructor
 Product::~Product(){ }
 
-// Return the id of the Product
+// Get and set methods for the Product (put more commments/header comments)
 string Product::getId(){return id;}
-
-// Return the category of the product
+void   Product::setId(string i){id = i;}
 string Product::getCategory(){return category;}
-
-// Return the condition of the product
+void   Product::setCategory(string c){category = c;}
 string Product::getCondition(){return condition;}
+void   Product::setCondition(string c){condition = c;}
 
 /*
  * Display information about this product, with each field 
@@ -96,15 +98,19 @@ protected:
 public:
     // Constructors
     Item();
-    Item(string t, string ava, string col, string pri);
+    //Item(string t, string ava, string col, string pri);
     virtual ~Item();
 
-    // Methods
+    // Get and set methods for an Item
     int display();
     string getTitle();
+    void   setTitle(string t);
     string getAvail();
+    void   setAvail(string ava);
     string getColor();
+    void   setColor(string c);
     string getPrice();
+    void   setPrice(string p);
 };
 
 // Default constructor method
@@ -118,29 +124,27 @@ Item::Item()
 }
 
 // Constructor method passed 4 strings
-Item::Item(string t, string ava, string col, string pri)
-{
-    // Set fields based on passed parameters
-    title = t;
-    avail = ava;
-    color = col;
-    price = pri;
-}
+//Item::Item(string t, string ava, string col, string pri)
+//{
+//    // Set fields based on passed parameters
+//    title = t;
+//    avail = ava;
+//    color = col;
+//    price = pri;
+//}
 
 // Destructor for default constructor
 Item::~Item(){ }
 
-// Return the title of the Item
+// Return and set methods for the fields
 string Item::getTitle(){return title;}
-
-// Return the availability of the Item
+void   Item::setTitle(string t){title = t;}
 string Item::getAvail(){return avail;}
-
-// Return the color of the Item
+void   Item::setAvail(string a){avail = a;}
 string Item::getColor(){return color;}
-
-// Return the price of the Item
+void   Item::setColor(string c){color = c;}
 string Item::getPrice(){return price;}
+void   Item::setPrice(string p){price = p;}
 
 /*
  * Overridden method from Public class displays all fields
@@ -157,7 +161,9 @@ Item::display()
 /*
  * FileNotFoundException class extends Exception
  */
-class FileNotFoundException : public Exception{ };
+//class FileNotFoundException : public Exception{ };
+//testing only
+class Exception{ };
 
 /*
  * End Classes
@@ -165,43 +171,101 @@ class FileNotFoundException : public Exception{ };
 
 /*
  * Function to open and read passed input file. If the file
- * does not exist, throw FileNotFoundException. Read each line
- * into a string array and return.
+ * does not exist, throw FileNotFoundException. Read each line of the file
+ * then set the Item's appropriate field. Add these items into the passed
+ * vector.
  */
-string readFile(const char* fileName)
+string readFile(string fileName, vector<Item*>* items)
 {
-    // Constant used to define array to hold lines of file
-    const int MAX_ITEMS = 1000;
-    
     string line; // string to hold one line of the file
-    string items[MAX_ITEMS]; // array to hold up to 1000 items
-    ifstream inputFile ( fileName ); // open the file
+    ifstream inputFile (( fileName ).c_str()); // must call c_str here since we're using std::string to open the file
+    int fieldCounter = 0; // initialize a field counter for each item
+    Item* item = new Item(); // initialize very first item
     
     // Ensure the file was opened. If not, throw exception. 
     if ( !inputFile.is_open() )
     {
         cout << "Could not open file. Ensure your path is correct." << endl;
-        throw FileNotFoundException();
+        //throw FileNotFoundException();
+        throw Exception();
     }
     // Otherwise, read the file line by line.
     else
     {
         while (getline (inputFile, line)) // Loop through each line.
         {
-            if (line != "**") // Fill the items array until you find **
+            if (line != "**") // Fill the item's fields until you find **
             {
-                cout << line << '\n';
+                switch( fieldCounter ) // To determine which field we have
+                {
+                    // Set each field based on current line for this Item
+                    case 0:
+                        item->setId(line);
+                        break;
+                    case 1:
+                        item->setCategory(line);
+                        break;
+                    case 2:
+                        item->setCondition(line);
+                        break;
+                    case 3:
+                        item->setTitle(line);
+                        break;
+                    case 4:
+                        item->setAvail(line);
+                        break;
+                    case 5:
+                        item->setColor(line);
+                        break;
+                    case 6:
+                        item->setPrice(line);
+                        break;
+                }
+                fieldCounter++; // Increment the counter for the next Item field
+            }
+            else // If we've reached ** create a new Item for the next iteration
+            {
+                items->push_back(item); // add the item to the vector
+                fieldCounter = 0; // "reset" the counter for next item
+                item = new Item();// create a new item for the next
             }
         }
         inputFile.close(); // Close the input file
     }
 }
 
-int main(int argc, char** argv) {
-    
-    Product* myproduct = new Product("me", "big men", "brand new");
-    myproduct->display();
+/*
+ * Get the file path from the user
+ */
+string getInput()
+{
+    string theInput; // to hold the file name or input from user
+    cout << "Please input the full path of the input file or type 'exit' to exit:";
+    getline (cin, theInput); // store the input
+    return theInput;
+}
 
+int main(int argc, char** argv)
+{
+    string input = getInput();
+    while (input != "exit")
+    {
+        cout << "input was: " << input;
+        vector<Item*>* googleItems = new vector<Item*>(); // Create a new vector of items
+        try // try reading the file to set the items fields
+        {
+            readFile(input, googleItems);
+            cout << "File read and items filled. Time to read another file?" << endl;
+            input = getInput();
+        }
+        catch (Exception e)
+        {
+            cout << "File path not found. Be sure to use forward slashes eg C:/..." << endl;
+            // Ask for the file path again
+            input = getInput();
+        }
+    }
+    
     return 0;
 }
 
