@@ -11,7 +11,7 @@
 #include <vector>
 #include <fstream>
 #include <string>
-//#include "Exception.h"
+#include "Exception.h"
 using namespace std;
 
 /*
@@ -161,9 +161,7 @@ Item::display()
 /*
  * FileNotFoundException class extends Exception
  */
-//class FileNotFoundException : public Exception{ };
-//testing only
-class Exception{ };
+class ExceptionFileNotFound : public Exception{ };
 
 /*
  * End Classes
@@ -175,10 +173,9 @@ class Exception{ };
  * then set the Item's appropriate field. Add these items into the passed
  * vector.
  */
-string readFile(string fileName, vector<Item*>* items)
+string readFile(ifstream &inputFile, vector<Item*>* items)
 {
     string line; // string to hold one line of the file
-    ifstream inputFile (( fileName ).c_str()); // must call c_str here since we're using std::string to open the file
     int fieldCounter = 0; // initialize a field counter for each item
     Item* item = new Item(); // initialize very first item
     
@@ -186,8 +183,7 @@ string readFile(string fileName, vector<Item*>* items)
     if ( !inputFile.is_open() )
     {
         cout << "Could not open file. Ensure your path is correct." << endl;
-        //throw FileNotFoundException();
-        throw Exception();
+        throw ExceptionFileNotFound();
     }
     // Otherwise, read the file line by line.
     else
@@ -246,23 +242,23 @@ string getInput()
 }
 
 int main(int argc, char** argv)
-{
-    string input = getInput();
-    while (input != "exit")
+{   
+    // Check command line arguments
+    if (argc != 2) // only 2 arguments...the program name and file path
+        cout << "usage: " << argv[0] << " <filepath>\n";
+    else
     {
-        cout << "input was: " << input;
         vector<Item*>* googleItems = new vector<Item*>(); // Create a new vector of items
-        try // try reading the file to set the items fields
+        ifstream filePath (argv[1]); // open the file and hold in filePath - the second argument should be file path
+        
+        try // try reading the file to set the items' fields
         {
-            readFile(input, googleItems);
-            cout << "File read and items filled. Time to read another file?" << endl;
-            input = getInput();
+            readFile(filePath, googleItems);
+            cout << "File read and items filled." << endl;
         }
-        catch (Exception e)
+        catch (ExceptionFileNotFound fnf)
         {
-            cout << "File path not found. Be sure to use forward slashes eg C:/..." << endl;
-            // Ask for the file path again
-            input = getInput();
+            cout << "File not found. Please rerun with correct path.";
         }
     }
     
