@@ -123,16 +123,6 @@ Item::Item()
     price = "";
 }
 
-// Constructor method passed 4 strings
-//Item::Item(string t, string ava, string col, string pri)
-//{
-//    // Set fields based on passed parameters
-//    title = t;
-//    avail = ava;
-//    color = col;
-//    price = pri;
-//}
-
 // Destructor for default constructor
 Item::~Item(){ }
 
@@ -167,100 +157,128 @@ class ExceptionFileNotFound : public Exception{ };
  * End Classes
  */
 
-/*
- * Function to open and read passed input file. If the file
- * does not exist, throw FileNotFoundException. Read each line of the file
- * then set the Item's appropriate field. Add these items into the passed
- * vector.
- */
-string readFile(ifstream &inputFile, vector<Item*>* items)
-{
-    string line; // string to hold one line of the file
-    int fieldCounter = 0; // initialize a field counter for each item
-    Item* item = new Item(); // initialize very first item
-    
-    // Ensure the file was opened. If not, throw exception. 
-    if ( !inputFile.is_open() )
-    {
-        cout << "Could not open file. Ensure your path is correct." << endl;
-        throw ExceptionFileNotFound();
-    }
-    // Otherwise, read the file line by line.
-    else
-    {
-        while (getline (inputFile, line)) // Loop through each line.
-        {
-            if (line != "**") // Fill the item's fields until you find **
-            {
-                switch( fieldCounter ) // To determine which field we have
-                {
-                    // Set each field based on current line for this Item
-                    case 0:
-                        item->setId(line);
-                        break;
-                    case 1:
-                        item->setCategory(line);
-                        break;
-                    case 2:
-                        item->setCondition(line);
-                        break;
-                    case 3:
-                        item->setTitle(line);
-                        break;
-                    case 4:
-                        item->setAvail(line);
-                        break;
-                    case 5:
-                        item->setColor(line);
-                        break;
-                    case 6:
-                        item->setPrice(line);
-                        break;
-                }
-                fieldCounter++; // Increment the counter for the next Item field
-            }
-            else // If we've reached ** create a new Item for the next iteration
-            {
-                items->push_back(item); // add the item to the vector
-                fieldCounter = 0; // "reset" the counter for next item
-                item = new Item();// create a new item for the next
-            }
-        }
-        inputFile.close(); // Close the input file
-    }
-}
-
-/*
- * Get the file path from the user
- */
-string getInput()
-{
-    string theInput; // to hold the file name or input from user
-    cout << "Please input the full path of the input file or type 'exit' to exit:";
-    getline (cin, theInput); // store the input
-    return theInput;
-}
-
 int main(int argc, char** argv)
 {   
+    // Create objects for use by main
+    string line; // string to hold one line of the file
+    string separator = "**"; // the string that separates products in the file
+    int fieldCounter = 0; // initialize a field counter for each item in the file
+    vector<Item*>* googleItems = new vector<Item*>; // Create a new vector of items
+    Item* item = new Item(); // initialize very first item
+    
     // Check command line arguments
     if (argc != 2) // only 2 arguments...the program name and file path
         cout << "usage: " << argv[0] << " <filepath>\n";
     else
     {
-        vector<Item*>* googleItems = new vector<Item*>(); // Create a new vector of items
-        ifstream filePath (argv[1]); // open the file and hold in filePath - the second argument should be file path
+        ifstream inputFile (argv[1]); // open the file and hold in filePath - the second argument should be file path
         
-        try // try reading the file to set the items' fields
+        // Ensure the file was opened. If not, throw exception. 
+        if ( !inputFile.is_open() )
         {
-            readFile(filePath, googleItems);
-            cout << "File read and items filled." << endl;
+            cout << "Could not open file. Ensure your path is correct. Exiting..." << endl;
+            throw ExceptionFileNotFound();
         }
-        catch (ExceptionFileNotFound fnf)
+        // Otherwise, read the file line by line.
+        else
         {
-            cout << "File not found. Please rerun with correct path.";
+            while (getline (inputFile, line)) // Loop through each line.
+            {
+                if ( line.find(separator) == string::npos ) // Fill the item's fields until you find **
+                {
+                    switch( fieldCounter ) // To determine which field we have
+                    {
+                        // Set each field based on current line for this Item
+                        case 0:
+                            item->setId(line);
+                            break;
+                        case 1:
+                            item->setCategory(line);
+                            break;
+                        case 2:
+                            item->setCondition(line);
+                            break;
+                        case 3:
+                            item->setTitle(line);
+                            break;
+                        case 4:
+                            item->setAvail(line);
+                            break;
+                        case 5:
+                            item->setColor(line);
+                            break;
+                        case 6:
+                            item->setPrice(line);
+                            break;
+                    }
+                    fieldCounter++; // Increment the counter for the next Item field
+                }
+                else // If we've reached ** create a new Item for the next iteration
+                {
+                    googleItems->push_back(item); // add the item to the vector
+                    fieldCounter = 0; // "reset" the counter for next item
+                    Item* item = new Item();// create a new item for the next
+                }
+            }
+        }
+        inputFile.close(); // Close the input file
+    }
+    
+    // Now that we have all the items stored in a vector, produce required output
+    
+    // Number of products is simply the size of the vector since it contains all the products
+    cout << "Total number of products: " << googleItems->size();
+    
+    /*
+     * The rest of the output required in the project specifications requires looping
+     * through the products again to determine certain criteria. We will accomplish
+     * this below, although a faster solution would be to do this while in the loop above.
+    */
+    
+    // Loop through the products and store certain criteria
+    // ints to count different criteria
+    int newProducts = 0;
+    int usedProducts = 0;
+    int refurProducts = 0;
+    // doubles for price specifications
+    double maxPriceNew = 0.00;
+    double maxPriceUsed = 0.00;
+    double maxPriceRefur = 0.00;
+    double minPriceNew = 999999.00;
+    double minPriceUsed = 999999.00;
+    double minPriceRefur = 999999.00;
+    double totalPrice = 0.00;
+    double avgPrice = 0.00;
+    
+    int size = googleItems->size(); // Store the size once so size() isn't called every iteration
+    // Loop through the googleItems vector to determine certain criteria
+    for (int i=0; i < size; i++)
+    {
+        Item* thisItem = googleItems->at(i); // Get the item from the vector
+        double itemPrice = thisItem->getPrice();
+        string itemCondition = thisItem->getCondition();
+        totalPrice += itemPrice;
+        if (itemCondition == "new")
+        {
+            newProducts++;
+            if (itemPrice > maxPriceNew) maxPriceNew = itemPrice;
+            if (itemPrice < minPriceNew) minPriceNew = itemPrice;
+        }
+        else if (itemCondition == "used")
+        {
+            usedProducts++;
+            if (itemPrice > maxPriceUsed) maxPriceUsed = itemPrice;
+            if (itemPrice < minPriceUsed) minPriceUsed = itemPrice;
+        }
+        else
+        {
+            refurProducts++;
+            if (itemPrice > maxPriceRefur) maxPriceRefur = itemPrice;
+            if (itemPrice < minPriceRefur) minPriceRefur = itemPrice;
         }
     }
+    
+    avgPrice = totalPrice/size;
     
     return 0;
 }
